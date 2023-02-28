@@ -1,0 +1,10 @@
+﻿  StdAfxTestCplusPlus.cpp
+  TestCPlusPlusDeriv.cpp
+  TestCPlusPlusOptim.cpp
+  TestVectorAndMatrix.cpp
+  Génération de code en cours
+  775 of 2641 functions (29.3%) were compiled, the rest were copied from previous compilation.
+    28 functions were new in current compilation
+    129 functions had inline decision re-evaluated but remain unchanged
+  Fin de la génération du code
+  TestCPlusPlus.vcxproj -> C:\Users\Ollivier\Documents\Visual Studio 2017\Projects\RegArch19\Exe\Release\Win32\TestCPlusPlus.exe
