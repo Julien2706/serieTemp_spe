@@ -1,0 +1,135 @@
+#
+# mettre libnlopt.a libgsl.a et libgslcblas.a dans le répertoire lib
+#
+
+CXXFLAGS = -g -O2 -std=c++11 -w -I./include 
+
+ERRORSRC=StdAfxError.cpp cError.cpp 
+
+VECTORANDMATRIXSRC=StdAfxVectorAndMatrix.cpp cGSLMatrix.cpp cGSLVector.cpp 
+
+WRAPPERGSLSRC=StdAfxWrapperGslCpp.cpp cGSLMultiMin.cpp
+
+WRAPPERNLOPTSRC=StdAfxWrapperNloptCpp.cpp WrapperNloptCpp.cpp
+
+REGARCHLIBSRC=StdAfxRegArchLib.cpp \
+cAbstCondMean.cpp \
+cAbstCondVar.cpp \
+cAbstResiduals.cpp \
+cAparch.cpp \
+cAr.cpp \
+cArch.cpp \
+cCondMean.cpp \
+cConst.cpp \
+cConstCondVar.cpp \
+cEgarch.cpp \
+cGarch.cpp \
+cGedResiduals.cpp \
+cLinReg.cpp \
+cMa.cpp \
+cMixNormResiduals.cpp \
+cNormResiduals.cpp \
+CNumericDerivative.cpp \
+cPolynome.cpp \
+cRegArchGradient.cpp \
+cRegArchHessien.cpp \
+cRegArchModel.cpp \
+cRegArchValue.cpp \
+cStdDevInMean.cpp \
+cStudentResiduals.cpp \
+cTabOfString.cpp \
+cTarch.cpp \
+cUgarch.cpp \
+cNgarch.cpp\
+cVarInMean.cpp \
+DerivativeTools.cpp \
+GslAndNloptOptim.cpp \
+RegArchCompute.cpp \
+SomeDistribution.cpp
+
+TESTCPLUSPLUSSRC=StdAfxTestCPlusPlus.cpp TestCPlusPlusDeriv.cpp
+
+PRECOMPHEAD=StdAfxError.h StdAfxVectorAndMatrix.h \
+StdAfxWrapperGslCpp.h StdAfxWrapperNloptCpp.h \
+StdAfxRegArchLib.h
+
+ERRORSRC1=$(ERRORSRC:%.cpp=sources/%.cpp)
+VECTORANDMATRIXSRC1=$(VECTORANDMATRIXSRC:%.cpp=sources/%.cpp)
+WRAPPERGSLSRC1=$(WRAPPERGSLSRC:%.cpp=sources/%.cpp)
+WRAPPERNLOPTSRC1=$(WRAPPERNLOPTSRC:%.cpp=sources/%.cpp)
+REGARCHLIBSRC1=$(REGARCHLIBSRC:%.cpp=sources/%.cpp)
+TESTCPLUSPLUSSRC1=$(TESTCPLUSPLUSSRC:%.cpp=TestCPlusPlus/%.cpp)
+PRECOMPHEAD1=$(PRECOMPHEAD:%.h=sources/%.h)
+
+OBJECTS = $(RREGARCHSRC1:.cpp=.o)
+OBJSERROR = $(ERRORSRC1:.cpp=.o)
+OBJSVECTORANDMATRIX = $(VECTORANDMATRIXSRC1:.cpp=.o)
+OBJSWRAPPERGSL = $(WRAPPERGSLSRC1:.cpp=.o)
+OBJSWRAPPERNLOPT = $(WRAPPERNLOPTSRC1:.cpp=.o)
+OBJSREGARCHLIB = $(REGARCHLIBSRC1:.cpp=.o)
+OBJTESTCPLUSPLUS = $(TESTCPLUSPLUSSRC1:.cpp=.o)
+OBJSPRECOMPHEAD = $(PRECOMPHEAD1:.h=.h.gch)
+
+
+LIBS = -L. -L./lib -lRegArchLib -lWrapperNloptCpp -lWrapperGslCpp -lVectorAndMatrix -lError -lgsl -lgslcblas -lnlopt -lm -lstdc++
+
+all: TestCPlusPlusExe
+
+PreCompil: $(OBJSPRECOMPHEAD)
+
+AllRegArchLibs : libError.a libVectorAndMatrix.a libWrapperGslCpp.a libWrapperNloptCpp.a libRegArchLib.a
+
+libError.a: $(OBJSPRECOMPHEAD) $(OBJSERROR)
+	$(AR) crs lib/$@ $(OBJSERROR)
+
+
+libVectorAndMatrix.a: $(OBJSPRECOMPHEAD) $(OBJSVECTORANDMATRIX)
+	$(AR) crs lib/$@ $(OBJSVECTORANDMATRIX)
+
+libWrapperNloptCpp.a:  $(OBJSPRECOMPHEAD)  $(OBJSWRAPPERNLOPT)
+	$(AR) crs lib/$@ $(OBJSWRAPPERNLOPT)
+
+libWrapperGslCpp.a:  $(OBJSPRECOMPHEAD)  $(OBJSWRAPPERGSL)
+	$(AR) crs lib/$@ $(OBJSWRAPPERGSL)
+
+libRegArchLib.a:  $(OBJSPRECOMPHEAD) $(OBJSREGARCHLIB)
+	$(AR) crs lib/$@ $(OBJSREGARCHLIB)
+
+TestCPlusPlusExe: $(OBJSPRECOMPHEAD) AllRegArchLibs $(OBJTESTCPLUSPLUS) 
+	@echo "Making $@..."
+	$(CXX) -o TestCPlusPlusExe $(OBJTESTCPLUSPLUS) $(LIBS)
+
+$(OBJSPRECOMPHEAD):%h.gch:%h
+	@echo "Precompiling header $@..."
+	$(CXX) $(CXXFLAGS) -o $@ -c $< 
+
+$(OBJSERROR):%o:%cpp		
+	$(CXX) $(CXXFLAGS) -include sources/StdAfxError.h -c $< -o $@
+
+$(OBJSVECTORANDMATRIX):%o:%cpp		
+	$(CXX) $(CXXFLAGS) -include sources/StdAfxVectorAndMatrix.h -c $< -o $@
+
+$(OBJSWRAPPERGSL):%o:%cpp
+	$(CXX) $(CXXFLAGS) -include sources/StdAfxWrapperGslCpp.h -c $< -o $@
+
+$(OBJSWRAPPERNLOPT):%o:%cpp
+	$(CXX) $(CXXFLAGS) -include sources/StdAfxWrapperNloptCpp.h -c $< -o $@
+
+$(OBJSREGARCHLIB):%o:%cpp
+	$(CXX) $(CXXFLAGS) -include sources/StdAfxRegArchLib.h -c $< -o $@
+
+$(OBJTESTCPLUSPLUS):%o:%cpp
+	$(CXX) $(CXXFLAGS) -I./sources -c $< -o $@
+
+
+
+clean:
+	@rm -f $(OBJSVECTORANDMATRIX)
+	@rm -f $(OBJSWRAPPERNLOPT)
+	@rm -f $(OBJSWRAPPERGSL)
+	@rm -f $(OBJSREGARCHLIB)
+	@rm -f $(OBJSREGARCHLIB)
+	@rm -f $(OBJTESTCPLUSPLUS)
+	@rm -f $(OBJSPRECOMPHEAD)
+	@rm -f ./sources/*.gch
+
