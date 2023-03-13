@@ -1,4 +1,4 @@
 /gsl-dir/
 /nlopt-dir/
 /RegArch20ACompleterLinux/lib/
-
+/RegArch20ACompleterLinux/sources/*.o
