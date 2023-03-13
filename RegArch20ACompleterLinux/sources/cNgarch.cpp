@@ -322,7 +322,7 @@ namespace RegArchLib {
 		for (uint i = 1 ; i <= MIN(myp, theDate) ; i++)
 			myRes += mvArch[i-1] *(theData.mYt[theDate-i] - mvTheta*sqrt(theData.mHt[theDate-i]))*(theData.mYt[theDate-i] - mvTheta*sqrt(theData.mHt[theDate-i])) ;
 		for (uint j = 1 ; j <= MIN(myq, theDate) ; j++)
-			myRes += mvGarch[j-1] * sqrt(theData.mHt[theDate-j] );
+			myRes += mvGarch[j-1] * theData.mHt[theDate-j];
 
 		return myRes ;
 	}
