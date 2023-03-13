@@ -316,17 +316,25 @@ namespace RegArchLib {
 	*/
 	double cNgarch::ComputeVar(uint theDate, const cRegArchValue& theData) const 
 	{
-		return 0;
+		uint myp = mvArch.GetSize();
+		uint myq = mvGarch.GetSize() ;
+		double myRes = mvConst ;
+		for (uint i = 1 ; i <= MIN(myp, theDate) ; i++)
+			myRes += mvArch[i-1] *( mvTheta*(theData.mYt[theDate-i] + mvTheta*sqrt(theData.mHt[theDate-i]))) ;
+		for (uint j = 1 ; j <= MIN(myq, theDate) ; j++)
+			myRes += mvGarch[j-1] * sqrt(theData.mHt[theDate-j] );
+
+		return exp(myRes) ;
 	}
 
 	uint cNgarch::GetNParam(void) const
 	{
-		return 0;
+		return mvArch.GetSize() + mvGarch.GetSize() + 2 ;
 	}
 
 	uint cNgarch::GetNLags(void) const
 	{
-		return 0;
+		return MAX(mvArch.GetSize(), mvGarch.GetSize()) ;
 	}
 
 	void cNgarch::ComputeGrad(uint theDate, const cRegArchValue& theValue, cRegArchGradient& theGradData, cAbstResiduals* theResiduals)
