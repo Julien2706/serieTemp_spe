@@ -314,7 +314,7 @@ namespace RegArchLib {
 	{
 	uint myp = mvArch.GetSize(),
 		myq = mvGarch.GetSize(),
-		myBegIndex = theGradData.GetNMeanParam() ;
+		myBegIndex = theGradData.GetNMeanParam();
 	uint i, j ;
 		theGradData.mCurrentGradVar = 0.0L ;
 		theGradData.mCurrentGradVar[myBegIndex] = 1.0 ;

@@ -147,11 +147,13 @@ int main(int argc, char* argv[])
 	myGarch.Set(0.1, 0, 1);
 	myGarch.Set(0.8, 0, 2);
 
-	cNgarch myNGarch(1, 1);
+	cNgarch myNGarch(2, 2);
 	myNGarch.Set(0.1, 0, 0);
-	myNGarch.Set(3.198596, 0, 1);
+	myNGarch.Set(0.5, 0, 1);
 	myNGarch.Set(0.1, 0, 2);
+	myNGarch.Set(-0.2, 1, 2);
 	myNGarch.Set(0.8, 0, 3);
+	myNGarch.Set(-0.4, 1, 3);
 
 	cNormResiduals myNormResid;
 
@@ -199,12 +201,12 @@ int main(int argc, char* argv[])
 
 	cCondMean myCondMean;
 
-		myCondMean.AddOneMean(myConst);
-		myCondMean.AddOneMean(myMa);
-		myCondMean.AddOneMean(myAr);
+		//myCondMean.AddOneMean(myConst);
+		//myCondMean.AddOneMean(myMa);
+		//myCondMean.AddOneMean(myAr);
 	//	myCondMean.AddOneMean(myArfima);
 	//	myCondMean.AddOneMean(myStdDevInMean);
-	//	myCondMean.AddOneMean(myVarInMean);
+		myCondMean.AddOneMean(myVarInMean);
 	//	myCondMean.AddOneMean(myBeta);
 	//	myLinRegBool = true;
 
@@ -215,7 +217,7 @@ int main(int argc, char* argv[])
 
 		//myModel.SetVar(myConstVar);	
 	//	myModel.SetVar(myArch);
-	 myModel.SetVar(myGarch);
+	//myModel.SetVar(myGarch);
 	//	myModel.SetVar(myEgarch);
 	//	myModel.SetVar(myAparch);
 	//	myModel.SetVar(myTarch);
@@ -223,9 +225,9 @@ int main(int argc, char* argv[])
 	//	myModel.SetVar(myUgarch) ;
 	//	myUgarchBool = true;
 
-	//myModel.SetVar(myNGarch);
+	myModel.SetVar(myNGarch);
 
-	 myModel.SetResid(myNormResid);
+	myModel.SetResid(myNormResid);
 	//	myModel.SetResid(myStudent) ;
 	//	myModel.SetResid(myMixNorm);
 	//	myModel.SetResid(myGedResiduals);
@@ -270,7 +272,7 @@ int main(int argc, char* argv[])
 	double myh = 0.001;
 	cDVector myVectParam(myNParam);
 	cNumericDerivative myNumDeriv = cNumericDerivative(myNParam, myNDistrParam, myh, myValue.mYt, &myValue.mXt, &myValue.mXvt);
-	uint myDate = 4;
+	uint myDate = 10;
 	cRegArchValue myAuxValue(myValue);
 	myModel.mVar->UpdateProxyVarParameters();
 	if (myModel.mMean != NULL)
