@@ -339,6 +339,30 @@ namespace RegArchLib {
 
 	void cNgarch::ComputeGrad(uint theDate, const cRegArchValue& theValue, cRegArchGradient& theGradData, cAbstResiduals* theResiduals)
 	{
+	uint myp = mvArch.GetSize(),
+		myq = mvGarch.GetSize(),
+		myBegIndex = theGradData.GetNMeanParam() ;
+	uint i, j ;
+		theGradData.mCurrentGradVar = 0.0L ;
+		theGradData.mCurrentGradVar[myBegIndex] = 1.0 ;
+	//THETA
+	for(i = 1 ; i <=  MIN(myp, theDate); i++){
+		theGradData.mCurrentGradVar[myBegIndex+1] += mvArch[i-1]*(-2.0*theValue.mUt[theDate-i]*sqrt(theValue.mHt[theDate-i])+ 2.0*mvTheta*theValue.mHt[theDate-i]) ;
+	}
+	//ARCH
+		for (i = 1 ; i <=  MIN(myp, theDate) ; i++)
+			theGradData.mCurrentGradVar[myBegIndex+1+i] = (theValue.mUt[theDate-i]-mvTheta*sqrt(theValue.mHt[theDate-i]))*(theValue.mUt[theDate-i]-mvTheta*sqrt(theValue.mHt[theDate-i])) ;
+		for (i = 1 ; i <= MIN(myp, theDate) ; i++)
+			theGradData.mCurrentGradVar += - 2.0 * mvArch[i-1] * theValue.mUt[theDate-i] * theGradData.mGradMt[i-1];
+		for (i = 1 ; i <= MIN(myp, theDate) ; i++)
+			theGradData.mCurrentGradVar += - 2.0 * mvArch[i-1] * theValue.mUt[theDate-i] * mvTheta * (theGradData.mGradHt[i-1]/(2*sqrt(theValue.mHt[theDate-i]))) - 2 * mvArch[i-1] * mvTheta * sqrt(theValue.mHt[theDate-i])*(-1*theGradData.mGradMt[i-1]);
+		for (i = 1 ; i <= MIN(myp, theDate) ; i++)
+			theGradData.mCurrentGradVar += mvArch[i-1] * mvTheta * mvTheta * theGradData.mGradHt[i-1];
+	//GARCH
+		for (j = 1; j <= MIN(myq, theDate); j++)
+			theGradData.mCurrentGradVar[myBegIndex + myp + 1 + j] += theValue.mHt[theDate - j];
+		for (j = 1; j <= MIN(myq, theDate); j++)
+			theGradData.mCurrentGradVar += mvGarch[j-1] * theGradData.mGradHt[j-1] ;
 	}
 
 	void cNgarch::RegArchParamToVector(cDVector& theDestVect, uint theIndex)

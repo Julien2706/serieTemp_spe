@@ -1,4 +1,4 @@
-// Test.cpp : définit le point d'entrée pour l'application console.
+// Test.cppï¿½: dï¿½finit le point d'entrï¿½e pour l'application console.
 //
 
 #include "StdAfxTestCPlusPlus.h"
@@ -147,6 +147,11 @@ int main(int argc, char* argv[])
 	myGarch.Set(0.1, 0, 1);
 	myGarch.Set(0.8, 0, 2);
 
+	cNgarch myNGarch(1, 1);
+	myNGarch.Set(0.1, 0, 0);
+	myNGarch.Set(3.198596, 0, 1);
+	myNGarch.Set(0.1, 0, 2);
+	myNGarch.Set(0.8, 0, 3);
 
 	cNormResiduals myNormResid;
 
@@ -194,9 +199,9 @@ int main(int argc, char* argv[])
 
 	cCondMean myCondMean;
 
-	//	myCondMean.AddOneMean(myConst);
-	//	myCondMean.AddOneMean(myMa);
-	//	myCondMean.AddOneMean(myAr);
+		myCondMean.AddOneMean(myConst);
+		myCondMean.AddOneMean(myMa);
+		myCondMean.AddOneMean(myAr);
 	//	myCondMean.AddOneMean(myArfima);
 	//	myCondMean.AddOneMean(myStdDevInMean);
 	//	myCondMean.AddOneMean(myVarInMean);
@@ -208,15 +213,17 @@ int main(int argc, char* argv[])
 	myModel.SetMean(myCondMean);
 
 
-		myModel.SetVar(myConstVar);	
+		//myModel.SetVar(myConstVar);	
 	//	myModel.SetVar(myArch);
-	// myModel.SetVar(myGarch);
+	 myModel.SetVar(myGarch);
 	//	myModel.SetVar(myEgarch);
 	//	myModel.SetVar(myAparch);
 	//	myModel.SetVar(myTarch);
 //		myModel.SetVar(myFigarch) ;
 	//	myModel.SetVar(myUgarch) ;
 	//	myUgarchBool = true;
+
+	//myModel.SetVar(myNGarch);
 
 	 myModel.SetResid(myNormResid);
 	//	myModel.SetResid(myStudent) ;
@@ -300,27 +307,27 @@ int main(int argc, char* argv[])
 		cout << myGradNum.mCurrentDiffLogDensity << endl << endl;
 		cout << "Hessien Mu" << endl;
 		cout << myHessien.mCurrentHessMu << endl;
-		cout << "Hessien numérique Mu" << endl;
+		cout << "Hessien numï¿½rique Mu" << endl;
 		cout << myHessNum.mCurrentHessMu << endl;
 		cout << "Hessien Var" << endl;
 		cout << myHessien.mCurrentHessVar << endl;
-		cout << "Hessien numérique Var" << endl;
+		cout << "Hessien numï¿½rique Var" << endl;
 		cout << myHessNum.mCurrentHessVar << endl;
 		cout << "Hessien Sigma" << endl;
 		cout << myHessien.mCurrentHessSigma << endl;
-		cout << "Hessien numérique Sigma" << endl;
+		cout << "Hessien numï¿½rique Sigma" << endl;
 		cout << myHessNum.mCurrentHessSigma << endl;
 		cout << "Hessien Eps" << endl;
 		cout << myHessien.mCurrentHessEps << endl;
-		cout << "Hessien numérique Eps" << endl;
+		cout << "Hessien numï¿½rique Eps" << endl;
 		cout << myHessNum.mCurrentHessEps << endl;
 		cout << "Grad Diff LogDens" << endl;
 		cout << myHessien.mCurrentGradDiffLogDensity << endl;
-		cout << "Grad Diff LogDens numérique" << endl;
+		cout << "Grad Diff LogDens numï¿½rique" << endl;
 		cout << myHessNum.mCurrentGradDiffLogDensity << endl;
 		cout << "Hessien Dens" << endl;
 		cout << myHessien.mCurrentHessDens << endl;
-		cout << "Hessien numérique Dens" << endl;
+		cout << "Hessien numï¿½rique Dens" << endl;
 		cout << myHessNum.mCurrentHessDens << endl;
 		myGradient.Update();
 		myHessien.Update();
