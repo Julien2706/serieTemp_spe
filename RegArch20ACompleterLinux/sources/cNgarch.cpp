@@ -392,12 +392,13 @@ namespace RegArchLib {
 		uint myp = mvArch.GetSize(), 
 		myq = mvGarch.GetSize() ;
 	uint myBegIndex = theGradData.GetNMeanParam();
+	printf("curent var avant\n");
+	theHessData.mCurrentHessVar.Print();
 		theHessData.mCurrentHessVar = 0.0;
 	uint i, j ;
 	// Gradient vecteur  
 		cDMatrix myMat = theHessData.mCurrentHessVar;
-		printf("test hess du vecteur \n");
-		myMat.Print();
+
 		double sumTheta = 0;
 		for (i = 1; i <= MIN(myp, theDate); i++){
 			sumTheta +=  mvArch[i-1]*2.0*theData.mHt[theDate-i];
@@ -406,43 +407,27 @@ namespace RegArchLib {
 			myMat.Set(result, myBegIndex+1+i, myBegIndex+1);
 		}
 		myMat.Set(sumTheta, myBegIndex+1, myBegIndex+1);
-		
-		// for (i = 1; i <= MIN(myp, theDate); i++){
-		//  	myMat.SetRow(myBegIndex + 1, myMat[myBegIndex + 1] + mvArch[i-1] *(mvTheta * 2.0 * theGradData.mGradHt[i-1] + 2 * theGradData.mGradMt[i-1] * sqrt(theData.mHt[theDate - i]) - 2 * theData.mUt[theDate - i]* (theGradData.mGradHt[i-1]/(2*sqrt(theData.mHt[theDate-i])))));
-		// }
-
-		// for (i = 1; i <= MIN(myp, theDate); i++){
-		//  	myMat.SetRow(myBegIndex + 1 + i , myMat[myBegIndex + 1 +i] - 2.0 * theGradData.mGradMt[i-1] * theData.mUt[theDate-i] - 2 * mvTheta *(-1.0*theGradData.mGradMt[ i - 1 ] * sqrt(theData.mHt[theDate - i]) + theData.mUt[theDate - i]  * (theGradData.mGradHt[i-1]/(2*sqrt(theData.mHt[theDate-i])))) +2*mvTheta* mvTheta*theGradData.mGradHt[i-1]) ; 
-		// }
-
-		//  for (i = 1; i <= MIN(myq, theDate); i++){
-		//  	myMat.SetRow(myBegIndex + 1 + myp + i , myMat[myBegIndex + 1 + myp +i] + theGradData.mGradHt[i - 1]) ; 
-		// }
-
-
-
 		theHessData.mCurrentHessVar += myMat;
-		theHessData.mCurrentHessVar.Print();
-
-
 
 	// THETA 
 	myMat = 0.0;
+	cDVector* myVect = new cGSLVector(myMat.GetNRow(), 0.0);
 	for (i = 1 ; i <= MIN(myp, theDate) ; i++)
-		myMat.SetRow(myBegIndex + 1, myMat[myBegIndex + 1] + mvArch[i-1] * 2 * mvTheta * theGradData.mGradHt[i-1]);
+		*myVect = *myVect + mvArch[i-1] * 2 * mvTheta * theGradData.mGradHt[i-1];
+	
 	for (i = 1 ; i <= MIN(myp, theDate) ; i++)
-		myMat.SetRow(myBegIndex + 1, myMat[myBegIndex + 1] - 2.0 * mvArch[i-1] * theData.mUt[theDate-i] * (theGradData.mGradHt[i-1]/(2*sqrt(theData.mHt[theDate-i]))) - 2 * mvArch[i-1] * sqrt(theData.mHt[theDate-i])*(-1*theGradData.mGradMt[i-1]));
-	// ARCH
+		*myVect = *myVect - 2.0 * mvArch[i-1] * theData.mUt[theDate-i] * (theGradData.mGradHt[i-1]/(2*sqrt(theData.mHt[theDate-i]))) - 2 * mvArch[i-1] * sqrt(theData.mHt[theDate-i])*(-1*theGradData.mGradMt[i-1]);
+	myMat.SetRow(myBegIndex + 1, *myVect);
+
+	//ARCH
 	theHessData.mCurrentHessVar += myMat + Transpose(myMat);
 		myMat = 0.0;
-		for (i = 1; i <= MIN(myp, theDate); i++){
-			myMat.SetRow(myBegIndex + 1 + i, -2.0 * theData.mUt[theDate - i] * theGradData.mGradMt[i - 1]);
-			myMat.SetRow(myBegIndex + 1 + i, myMat[myBegIndex + 1 + i] - 2.0 * theData.mUt[theDate - i] * mvTheta * (theGradData.mGradHt[i-1]/(2*sqrt(theData.mHt[theDate-i]))));
-			myMat.SetRow(myBegIndex + 1 + i, myMat[myBegIndex + 1 + i] + 2.0 * sqrt(theData.mHt[theDate - i]) * mvTheta * theGradData.mGradMt[i - 1]);
-			myMat.SetRow(myBegIndex + 1 + i, myMat[myBegIndex + 1 + i] + mvTheta * mvTheta* theGradData.mGradHt[i - 1]);
 
+		for (i = 1; i <= MIN(myp, theDate); i++){
+			myMat.SetRow(myBegIndex + 1 + i, -2.0 * theData.mUt[theDate - i] * theGradData.mGradMt[i - 1] - 2.0 * theData.mUt[theDate - i] * mvTheta * (theGradData.mGradHt[i-1]/(2*sqrt(theData.mHt[theDate-i]))) + 2.0 * sqrt(theData.mHt[theDate - i]) * mvTheta * theGradData.mGradMt[i - 1] + mvTheta * mvTheta* theGradData.mGradHt[i - 1]);
 		}
 		theHessData.mCurrentHessVar += myMat + Transpose(myMat);
+
 		for (i = 1; i <= MIN(myp, theDate); i++){
 			theHessData.mCurrentHessVar -= 2.0 * mvArch[i - 1] * theData.mUt[theDate - i] * theHessData.mHessMt[i - 1];
 			theHessData.mCurrentHessVar -= 2.0 * mvArch[i - 1] * mvTheta * theData.mUt[theDate - i] * ((theHessData.mHessHt[i - 1]*2*sqrt(theData.mHt[theDate - i]) - (theGradData.mGradHt[i-1]*Transpose(theGradData.mGradHt[i-1]))/sqrt(theData.mHt[theDate-i]))/(4*theData.mHt[theDate-i]));
@@ -451,8 +436,8 @@ namespace RegArchLib {
 			theHessData.mCurrentHessVar += 2.0 * mvArch[i - 1] * theGradData.mGradMt[i-1]*Transpose(theGradData.mGradMt[i-1]);
 			theHessData.mCurrentHessVar += 2.0 * mvArch[i - 1] * mvTheta * theGradData.mGradMt[i-1]*Transpose((theGradData.mGradHt[i-1]/(2*sqrt(theData.mHt[theDate-i]))));
 			theHessData.mCurrentHessVar += 2.0 * mvArch[i - 1] * mvTheta * (theGradData.mGradHt[i-1]/(2*sqrt(theData.mHt[theDate-i]))) * Transpose(theGradData.mGradMt[i-1]);
-
 		}	
+		
 	// GARCH
 		myMat = 0.0;
 		for (j = 1; j <= MIN(myq, theDate); j++)

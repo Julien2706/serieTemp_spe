@@ -147,13 +147,7 @@ int main(int argc, char* argv[])
 	myGarch.Set(0.1, 0, 1);
 	myGarch.Set(0.8, 0, 2);
 
-	cNgarch myNGarch(1, 1);
-	myNGarch.Set(0.1, 0, 0);
-	myNGarch.Set(0.5, 0, 1);
-	myNGarch.Set(0.1, 0, 2);
-	//myNGarch.Set(-0.2, 1, 2);
-	myNGarch.Set(0.8, 0, 3);
-	//myNGarch.Set(-0.4, 1, 3);
+
 
 	cNormResiduals myNormResid;
 
@@ -225,6 +219,14 @@ int main(int argc, char* argv[])
 	//	myModel.SetVar(myUgarch) ;
 	//	myUgarchBool = true;
 
+
+	cNgarch myNGarch(2, 2);
+	myNGarch.Set(0.1, 0, 0);
+	myNGarch.Set(0.5, 0, 1);
+	myNGarch.Set(0.1, 0, 2);
+	myNGarch.Set(-0.2, 1, 2);
+	myNGarch.Set(0.1, 0, 3);
+	myNGarch.Set(-0.4, 1, 3);
 	myModel.SetVar(myNGarch);
 
 	myModel.SetResid(myNormResid);
