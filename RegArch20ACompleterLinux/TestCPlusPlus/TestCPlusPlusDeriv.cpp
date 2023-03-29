@@ -195,9 +195,9 @@ int main(int argc, char* argv[])
 
 	cCondMean myCondMean;
 
-		//myCondMean.AddOneMean(myConst);
-		//myCondMean.AddOneMean(myMa);
-		//myCondMean.AddOneMean(myAr);
+	//	myCondMean.AddOneMean(myConst);
+	//	myCondMean.AddOneMean(myMa);
+	//	myCondMean.AddOneMean(myAr);
 	//	myCondMean.AddOneMean(myArfima);
 	//	myCondMean.AddOneMean(myStdDevInMean);
 		myCondMean.AddOneMean(myVarInMean);
@@ -209,13 +209,13 @@ int main(int argc, char* argv[])
 	myModel.SetMean(myCondMean);
 
 
-		//myModel.SetVar(myConstVar);	
+	//	myModel.SetVar(myConstVar);	
 	//	myModel.SetVar(myArch);
-	//myModel.SetVar(myGarch);
+	//	myModel.SetVar(myGarch);
 	//	myModel.SetVar(myEgarch);
 	//	myModel.SetVar(myAparch);
 	//	myModel.SetVar(myTarch);
-//		myModel.SetVar(myFigarch) ;
+	//	myModel.SetVar(myFigarch) ;
 	//	myModel.SetVar(myUgarch) ;
 	//	myUgarchBool = true;
 
@@ -227,6 +227,8 @@ int main(int argc, char* argv[])
 	myNGarch.Set(-0.2, 1, 2);
 	myNGarch.Set(0.1, 0, 3);
 	myNGarch.Set(-0.4, 1, 3);
+
+
 	myModel.SetVar(myNGarch);
 
 	myModel.SetResid(myNormResid);

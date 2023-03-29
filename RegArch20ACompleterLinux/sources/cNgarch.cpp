@@ -345,23 +345,32 @@ namespace RegArchLib {
 	uint i, j ;
 		theGradData.mCurrentGradVar = 0.0L ;
 		theGradData.mCurrentGradVar[myBegIndex] = 1.0 ;
-	//THETA
+	//Derivé sur THETA
+	//sum_{i=1}{p}{Alpha_i*(-2*U(t-i)*Sigma(t-i) + 2 * mvTheta * H(t-i))}
+
 	for(i = 1 ; i <=  MIN(myp, theDate); i++){
 		theGradData.mCurrentGradVar[myBegIndex+1] += mvArch[i-1]*(-2.0*theValue.mUt[theDate-i]*sqrt(theValue.mHt[theDate-i])+ 2.0*mvTheta*theValue.mHt[theDate-i]) ;
 	}
-	//ARCH
+
+	//Derivé de la partie ARCH
 		for (i = 1 ; i <=  MIN(myp, theDate) ; i++)
+			//Derivé sur alpha_i : [U(t-i) - mvTheta*Sigma(t-i)]**2
 			theGradData.mCurrentGradVar[myBegIndex+1+i] = (theValue.mUt[theDate-i]-mvTheta*sqrt(theValue.mHt[theDate-i]))*(theValue.mUt[theDate-i]-mvTheta*sqrt(theValue.mHt[theDate-i])) ;
 		for (i = 1 ; i <= MIN(myp, theDate) ; i++)
+			//Derivé de U**2 : - Alpha_i*2*U(t-i)*gradM(t-i)
 			theGradData.mCurrentGradVar += - 2.0 * mvArch[i-1] * theValue.mUt[theDate-i] * theGradData.mGradMt[i-1];
 		for (i = 1 ; i <= MIN(myp, theDate) ; i++)
+			//Derivé de 2*U*sigma*mvTheta : - Alpha_i*2*U(t-i)*gradSigma(t-i) + Alpha_i*2*Sigma(t-i)*gradM(t-i)
 			theGradData.mCurrentGradVar += - 2.0 * mvArch[i-1] * theValue.mUt[theDate-i] * mvTheta * (theGradData.mGradHt[i-1]/(2*sqrt(theValue.mHt[theDate-i]))) - 2 * mvArch[i-1] * mvTheta * sqrt(theValue.mHt[theDate-i])*(-1*theGradData.mGradMt[i-1]);
 		for (i = 1 ; i <= MIN(myp, theDate) ; i++)
+			//Derivé de [sigma*mvTheta]**2 : - Alpha_i*mvTheta**2 *gradH(t-i)
 			theGradData.mCurrentGradVar += mvArch[i-1] * mvTheta * mvTheta * theGradData.mGradHt[i-1];
-	//GARCH
+	//Dérivé de la partie GARCH
 		for (j = 1; j <= MIN(myq, theDate); j++)
+			//Derivé sur Beta_i : gradH(t-i)
 			theGradData.mCurrentGradVar[myBegIndex + myp + 1 + j] += theValue.mHt[theDate - j];
 		for (j = 1; j <= MIN(myq, theDate); j++)
+			//Derivé de Beta_i * H(t-i) : Beta_i * gradH(t-i)
 			theGradData.mCurrentGradVar += mvGarch[j-1] * theGradData.mGradHt[j-1] ;
 	}
 
@@ -396,10 +405,11 @@ namespace RegArchLib {
 	theHessData.mCurrentHessVar.Print();
 		theHessData.mCurrentHessVar = 0.0;
 	uint i, j ;
-	// Gradient vecteur  
+	// Gradient du vecteur  
 		cDMatrix myMat = theHessData.mCurrentHessVar;
-
 		double sumTheta = 0;
+		// Derivé seconde par rapport a theta : sum_{i=1}{p}{Alpha_i * 2 * H(t-i)}
+		// Derivé seconde par rapport a theta et alpha_i : -2*U(t-i)*Sigma(t-i) + 2 * mvTheta * H(t-i)
 		for (i = 1; i <= MIN(myp, theDate); i++){
 			sumTheta +=  mvArch[i-1]*2.0*theData.mHt[theDate-i];
 			double result = -2.0*theData.mUt[theDate-i]*sqrt(theData.mHt[theDate-i])+2.0*mvTheta*theData.mHt[theDate-i];
@@ -409,42 +419,67 @@ namespace RegArchLib {
 		myMat.Set(sumTheta, myBegIndex+1, myBegIndex+1);
 		theHessData.mCurrentHessVar += myMat;
 
-	// THETA 
+	// Derivé sur THETA 
 	myMat = 0.0;
 	cDVector* myVect = new cGSLVector(myMat.GetNRow(), 0.0);
+
+	// Derivé de sum_{i=1}{p}{Alpha_i * Theta**2 * gradH(t-i)} : sum_{i=1}{p}{Alpha_i * 2 * Theta* * gradH(t-i)}
 	for (i = 1 ; i <= MIN(myp, theDate) ; i++)
 		*myVect = *myVect + mvArch[i-1] * 2 * mvTheta * theGradData.mGradHt[i-1];
-	
+
+	// Derivé de sum_{i=1}{p}{-2 * Alpha_i * U(t-i) * Theta * gradSigma(t-i) -2 * Alpha_i * gradU(t-i) * Theta * Sigma(t-i)} : 
+	// -2 * Alpha_i * U(t-i)  * gradSigma(t-i) -2 * Alpha_i * gradU(t-i)  * Sigma(t-i)
 	for (i = 1 ; i <= MIN(myp, theDate) ; i++)
 		*myVect = *myVect - 2.0 * mvArch[i-1] * theData.mUt[theDate-i] * (theGradData.mGradHt[i-1]/(2*sqrt(theData.mHt[theDate-i]))) - 2 * mvArch[i-1] * sqrt(theData.mHt[theDate-i])*(-1*theGradData.mGradMt[i-1]);
+	
 	myMat.SetRow(myBegIndex + 1, *myVect);
-
-	//ARCH
 	theHessData.mCurrentHessVar += myMat + Transpose(myMat);
-		myMat = 0.0;
 
-		for (i = 1; i <= MIN(myp, theDate); i++){
-			myMat.SetRow(myBegIndex + 1 + i, -2.0 * theData.mUt[theDate - i] * theGradData.mGradMt[i - 1] - 2.0 * theData.mUt[theDate - i] * mvTheta * (theGradData.mGradHt[i-1]/(2*sqrt(theData.mHt[theDate-i]))) + 2.0 * sqrt(theData.mHt[theDate - i]) * mvTheta * theGradData.mGradMt[i - 1] + mvTheta * mvTheta* theGradData.mGradHt[i - 1]);
-		}
-		theHessData.mCurrentHessVar += myMat + Transpose(myMat);
+	//Dévrié de la partie ARCH
+	myMat = 0.0;
+	for (i = 1; i <= MIN(myp, theDate); i++){
+		//Derivé sur alpha_i : 
+		// 2 * U(t-i) * gradU(t-i) 
+		// -2 * U(t-i) * Theta * gradSigma(t-i) 
+		// -2 * gradU(t-i) * Theta * Sigma(t-i) 
+		// + * gradH(t-i) * Theta**2
+		myMat.SetRow(myBegIndex + 1 + i, -2.0 * theData.mUt[theDate - i] * theGradData.mGradMt[i - 1] - 2.0 * theData.mUt[theDate - i] * mvTheta * (theGradData.mGradHt[i-1]/(2*sqrt(theData.mHt[theDate-i]))) + 2.0 * sqrt(theData.mHt[theDate - i]) * mvTheta * theGradData.mGradMt[i - 1] + mvTheta * mvTheta* theGradData.mGradHt[i - 1]);
+	}
+	theHessData.mCurrentHessVar += myMat + Transpose(myMat);
 
-		for (i = 1; i <= MIN(myp, theDate); i++){
+	for (i = 1; i <= MIN(myp, theDate); i++){
+		// Dérivé de : 2 * alpha_i * U(t-i) * gradU(t-i) :
+			// 2 * alpha_i * U(t-i) * hessU(t-i)
 			theHessData.mCurrentHessVar -= 2.0 * mvArch[i - 1] * theData.mUt[theDate - i] * theHessData.mHessMt[i - 1];
-			theHessData.mCurrentHessVar -= 2.0 * mvArch[i - 1] * mvTheta * theData.mUt[theDate - i] * ((theHessData.mHessHt[i - 1]*2*sqrt(theData.mHt[theDate - i]) - (theGradData.mGradHt[i-1]*Transpose(theGradData.mGradHt[i-1]))/sqrt(theData.mHt[theDate-i]))/(4*theData.mHt[theDate-i]));
-			theHessData.mCurrentHessVar += 2.0 * mvArch[i - 1] * mvTheta * theHessData.mHessMt[i - 1]*sqrt(theData.mHt[theDate - i]) ;
-			theHessData.mCurrentHessVar += mvArch[i - 1] * mvTheta * mvTheta * theHessData.mHessHt[i - 1];
+			// 2 * alpha_i * gradU(t-i) * gradU(t-i)
 			theHessData.mCurrentHessVar += 2.0 * mvArch[i - 1] * theGradData.mGradMt[i-1]*Transpose(theGradData.mGradMt[i-1]);
+		// Dérivé de : -2 * alpha_i * Theta * U(t-i) * gradSigma(t-i) :
+			// -2 * alpha_i * Theta * U(t-i) * hessSigma(t-i)
+			theHessData.mCurrentHessVar -= 2.0 * mvArch[i - 1] * mvTheta * theData.mUt[theDate - i] * ((theHessData.mHessHt[i - 1]*2*sqrt(theData.mHt[theDate - i]) - (theGradData.mGradHt[i-1]*Transpose(theGradData.mGradHt[i-1]))/sqrt(theData.mHt[theDate-i]))/(4*theData.mHt[theDate-i]));
+			// -2 * alpha_i * Theta * gradU(t-i) * gradSigma(t-i)
 			theHessData.mCurrentHessVar += 2.0 * mvArch[i - 1] * mvTheta * theGradData.mGradMt[i-1]*Transpose((theGradData.mGradHt[i-1]/(2*sqrt(theData.mHt[theDate-i]))));
+		// Dérivé de : -2 * alpha_i * Theta * Sigma(t-i) * gradU(t-i) :
+			// -2 * alpha_i * Theta *  Sigma(t-i) * hessU(t-i) 
+			theHessData.mCurrentHessVar += 2.0 * mvArch[i - 1] * mvTheta * theHessData.mHessMt[i - 1]*sqrt(theData.mHt[theDate - i]) ;
+			// -2 * alpha_i * Theta *  gradSigma(t-i) * gradU(t-i) 
 			theHessData.mCurrentHessVar += 2.0 * mvArch[i - 1] * mvTheta * (theGradData.mGradHt[i-1]/(2*sqrt(theData.mHt[theDate-i]))) * Transpose(theGradData.mGradMt[i-1]);
-		}	
+		// Dérivé de : alpha_i * Theta**2 * gradH(t-i) :
+			// alpha_i * Theta**2 * hessH(t-i) 
+			theHessData.mCurrentHessVar += mvArch[i - 1] * mvTheta * mvTheta * theHessData.mHessHt[i - 1];
+	
+	}	
 		
-	// GARCH
+	// Dérivé de la partie GARCH
 		myMat = 0.0;
 		for (j = 1; j <= MIN(myq, theDate); j++)
+		//Derivé sur beta_i de : beta_i * gradH(t-i)
+			// gradH(t-i)
 			myMat.SetRow(myBegIndex + 1 + myp + j, theGradData.mGradHt[j - 1]);
 		theHessData.mCurrentHessVar += myMat + Transpose(myMat);
 
 		for (j = 1; j <= MIN(myq, theDate); j++)
+		// Dérivé de : beta_i * gradH(t-i) :
+			// beta_i * hessH(t-i)
 			theHessData.mCurrentHessVar += mvGarch[j - 1] * theHessData.mHessHt[j - 1];
 	}
 	

@@ -316,7 +316,7 @@ namespace RegArchLib {
 		myq = mvGarch.GetSize(),
 		myBegIndex = theGradData.GetNMeanParam();
 	uint i, j ;
-		theGradData.mCurrentGradVar = 0.0L ;
+		 theGradData.mCurrentGradVar = 0.0L ;
 		theGradData.mCurrentGradVar[myBegIndex] = 1.0 ;
 	//ARCH
 		for (i = 1 ; i <=  MIN(myp, theDate) ; i++)
@@ -362,8 +362,10 @@ namespace RegArchLib {
 		for (i = 1; i <= MIN(myp, theDate); i++)
 			myMat.SetRow(myBegIndex + i, -2 * theData.mUt[theDate - i] * theGradData.mGradMt[i - 1]);
 		theHessData.mCurrentHessVar += myMat + Transpose(myMat);
-		for (i = 1; i <= MIN(myp, theDate); i++)
+		for (i = 1; i <= MIN(myp, theDate); i++){
 			theHessData.mCurrentHessVar -= 2.0 * mvArch[i - 1] * theData.mUt[theDate - i] * theHessData.mHessMt[i - 1];
+			theHessData.mCurrentHessVar += 2.0 * mvArch[i - 1] * theGradData.mGradMt[i - 1] * Transpose(theGradData.mGradMt[i - 1]);
+		}
 	// GARCH
 		myMat = 0.0;
 		for (j = 1; j <= MIN(myq, theDate); j++)
